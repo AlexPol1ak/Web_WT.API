@@ -1,0 +1,6 @@
+@Poliak_UI_WT.API_HostAddress = http://localhost:5082
+
+GET {{Poliak_UI_WT.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
