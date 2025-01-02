@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Poliak_UI_WT.API.Data;
 using Poliak_UI_WT.Domain.Entities;
+using Poliak_UI_WT.Domain.Models;
 
 namespace Poliak_UI_WT.API.Controllers
 {
@@ -17,10 +18,40 @@ namespace Poliak_UI_WT.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPhones()
+        public async Task<ActionResult<ResponseData<ListModel<Phone>>>> GetPhones(
+             string? category,
+             int pageNo = 1,
+             int pageSize = 3
+            )
         {
-            var phones = await _context.Phones.ToListAsync();
-            return Ok(phones);
+
+            var result = new ResponseData<ListModel<Phone>>();
+            var data = _context.Phones.Include(d => d.Category).Where(d => String.IsNullOrEmpty(category)
+                 || d.Category.NormalizedName.Equals(category));
+
+            int totalPages = (int)Math.Ceiling(data.Count() / (double)pageSize);
+            if (pageNo > totalPages)
+                pageNo = totalPages;
+
+            // Создание объекта ProductListModel с нужной страницей данных
+            var listData = new ListModel<Phone>()
+            {
+                Items = await data.Skip((pageNo - 1) * pageSize).Take(pageSize).ToListAsync(),
+                CurrentPage = pageNo,
+                TotalPages = totalPages
+            };
+
+            // поместить данные в объект результата
+            result.Data = listData;
+
+            // Если список пустой
+            if (data.Count() == 0)
+            {
+                result.Success = false;
+                result.Error = "Нет объектов в выбранной категории";
+            }
+
+            return result;
         }
 
 
