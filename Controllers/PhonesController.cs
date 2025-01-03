@@ -25,33 +25,52 @@ namespace Poliak_UI_WT.API.Controllers
             )
         {
 
-            var result = new ResponseData<ListModel<Phone>>();
-            var data = _context.Phones.Include(d => d.Category).Where(d => String.IsNullOrEmpty(category)
-                 || d.Category.NormalizedName.Equals(category));
+            var dataQuery = _context.Phones
+        .Include(d => d.Category)
+        .Where(d => string.IsNullOrEmpty(category) || d.Category.NormalizedName == category);
 
-            int totalPages = (int)Math.Ceiling(data.Count() / (double)pageSize);
-            if (pageNo > totalPages)
+            int totalItems = await dataQuery.CountAsync();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            if (pageNo > totalPages && totalPages > 0)
                 pageNo = totalPages;
 
-            // Создание объекта ProductListModel с нужной страницей данных
-            var listData = new ListModel<Phone>()
+            var phones = await dataQuery
+                .Skip((pageNo - 1) * pageSize)
+                .Take(pageSize)
+                .Select(phone => new Phone
+                {
+                    PhoneId = phone.PhoneId,
+                    Name = phone.Name,
+                    Model = phone.Model,
+                    Description = phone.Description,
+                    Image = phone.Image,
+                    Price = phone.Price,
+                    CategoryId = phone.CategoryId,
+                    Category = phone.Category != null
+                        ? new Category
+                        {
+                            CategoryId = phone.Category.CategoryId,
+                            Name = phone.Category.Name,
+                            NormalizedName = phone.Category.NormalizedName
+                        }
+                        : null
+                })
+                .ToListAsync();
+
+            var result = new ResponseData<ListModel<Phone>>
             {
-                Items = await data.Skip((pageNo - 1) * pageSize).Take(pageSize).ToListAsync(),
-                CurrentPage = pageNo,
-                TotalPages = totalPages
+                Data = new ListModel<Phone>
+                {
+                    Items = phones,
+                    CurrentPage = pageNo,
+                    TotalPages = totalPages
+                },
+                Success = phones.Any(),
+                Error = phones.Any() ? null : "Нет объектов в выбранной категории"
             };
 
-            // поместить данные в объект результата
-            result.Data = listData;
-
-            // Если список пустой
-            if (data.Count() == 0)
-            {
-                result.Success = false;
-                result.Error = "Нет объектов в выбранной категории";
-            }
-
-            return result;
+            return Ok(result);
         }
 
 
