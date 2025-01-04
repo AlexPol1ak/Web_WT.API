@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Poliak_UI_WT.API.Data;
 using Poliak_UI_WT.Domain.Entities;
 using Poliak_UI_WT.Domain.Models;
+using Poliak_UI_WT.Domain.Utils;
 
 namespace Poliak_UI_WT.API.Controllers
 {
@@ -89,6 +90,11 @@ namespace Poliak_UI_WT.API.Controllers
             return Ok(phone);
         }
 
+        /// <summary>
+        /// Добавить новый телефон
+        /// </summary>
+        /// <param name="phone"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> CreatePhone([FromBody] Phone phone)
         {
@@ -96,9 +102,10 @@ namespace Poliak_UI_WT.API.Controllers
             {
                 return BadRequest();
             }
-
+            DebugHelper.ShowData(phone);
             _context.Phones.Add(phone);
             await _context.SaveChangesAsync();
+
 
             return CreatedAtAction(nameof(GetPhone), new { id = phone.PhoneId }, phone);
         }
@@ -143,6 +150,12 @@ namespace Poliak_UI_WT.API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Добавить изображение к телефону.
+        /// </summary>
+        /// <param name="id"> ID телефона</param>
+        /// <param name="image"> Файл изображения.</param>
+        /// <returns></returns>
         [HttpPost("{id}")]
         public async Task<IActionResult> SaveImage(int id, IFormFile image)
         {
