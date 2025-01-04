@@ -11,10 +11,12 @@ namespace Poliak_UI_WT.API.Controllers
     public class PhonesController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public PhonesController(AppDbContext context)
+        public PhonesController(AppDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         [HttpGet]
@@ -139,6 +141,39 @@ namespace Poliak_UI_WT.API.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [HttpPost("{id}")]
+        public async Task<IActionResult> SaveImage(int id, IFormFile image)
+        {
+            // Найти объект по Id
+            var phone = await _context.Phones.FindAsync(id);
+            if (phone == null)
+            {
+                return NotFound();
+            }
+            // Путь к папке wwwroot/Images
+            var imagesPath = Path.Combine(_env.WebRootPath, "Images", "MemoryPhones");
+            // получить случайное имя файла
+            var randomName = Path.GetRandomFileName();
+            // получить расширение в исходном файле
+            var extension = Path.GetExtension(image.FileName);
+            // задать в новом имени расширение как в исходном файле
+            var fileName = Path.ChangeExtension(randomName, extension);
+            // полный путь к файлу
+            var filePath = Path.Combine(imagesPath, fileName);
+            // создать файл и открыть поток для записи
+            using var stream = System.IO.File.OpenWrite(filePath);
+            // скопировать файл в поток
+            await image.CopyToAsync(stream);
+            // получить Url хоста
+            var host = "https://" + Request.Host;
+            // Url файла изображения
+            var url = $"{host}/Images/MemoryPhones/{fileName}";
+            // Сохранить url файла в объекте
+            phone.Image = url;
+            await _context.SaveChangesAsync();
+            return Ok();
         }
     }
 }
