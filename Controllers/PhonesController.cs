@@ -134,6 +134,11 @@ namespace Poliak_UI_WT.API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Удалить телефон.
+        /// </summary>
+        /// <param name="id">Id телефона</param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePhone(int id)
         {
@@ -142,6 +147,18 @@ namespace Poliak_UI_WT.API.Controllers
             if (phone == null)
             {
                 return NotFound();
+            }
+
+            if (!string.IsNullOrEmpty(phone.Image))
+            {
+                string imagePath = Path.Combine(_env.WebRootPath, new Uri(phone.Image).LocalPath.TrimStart('/'));
+                string normalizedImagePath = Path.GetFullPath(imagePath);
+                if (System.IO.File.Exists(normalizedImagePath))
+                {
+                    System.IO.File.Delete(normalizedImagePath);
+                }
+
+                DebugHelper.ShowData(normalizedImagePath, phone);
             }
 
             _context.Phones.Remove(phone);
