@@ -114,27 +114,79 @@ namespace Poliak_UI_WT.API.Controllers
             return CreatedAtAction(nameof(GetPhone), new { id = phone.PhoneId }, phone);
         }
 
+        /// <summary>
+        /// Обновить данные телефона.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="phone"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePhone(int id, [FromBody] Phone phone)
         {
+            //DebugHelper.ShowData(id, phone.Name, phone.Model, phone.Price);
+
             if (id != phone.PhoneId)
             {
-                return BadRequest("ID in the route does not match the ID in the body.");
+                //DebugHelper.ShowError("ID in the route does not match ID in the phone object.");
+                return BadRequest("ID in the route does not match ID in the phone object.");
             }
 
             var existingPhone = await _context.Phones.FindAsync(id);
             if (existingPhone == null)
             {
-                return NotFound();
+                //DebugHelper.ShowError("Phone not found.");
+                return NotFound("Phone not found.");
             }
 
+            // Обновление полей существующего телефона
             existingPhone.Name = phone.Name;
-            existingPhone.Price = phone.Price;
+            existingPhone.Model = phone.Model;
             existingPhone.Description = phone.Description;
+            existingPhone.Price = phone.Price;
+            existingPhone.CategoryId = phone.CategoryId;
 
             _context.Entry(existingPhone).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Обновляет изображение телефона
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="image"></param>
+        /// <returns></returns>
+        [HttpPost("update_image/{id}")]
+        public async Task<ActionResult> UpdatePhoneImage(int id, IFormFile image)
+        {
+            Phone? phone = await _context.Phones.FindAsync(id);
+            if (phone == null) return NotFound("Phone not found.");
+
+            if (!string.IsNullOrEmpty(phone.Image))
+            {
+                string imagePath = Path.Combine(_env.WebRootPath, new Uri(phone.Image).LocalPath.TrimStart('/'));
+                string normalizedImagePath = Path.GetFullPath(imagePath);
+                if (System.IO.File.Exists(normalizedImagePath))
+                {
+                    System.IO.File.Delete(normalizedImagePath);
+                }
+
+                phone.Image = null;
+            }
+
+            var imagesPath = Path.Combine(_env.WebRootPath, "Images", "MemoryPhones");
+            var randomName = Path.GetRandomFileName();
+            var extension = Path.GetExtension(image.FileName);
+            var fileName = Path.ChangeExtension(randomName, extension);
+            var filePath = Path.Combine(imagesPath, fileName);
+            using var stream = System.IO.File.OpenWrite(filePath);
+            await image.CopyToAsync(stream);
+            var host = "https://" + Request.Host;
+            var url = $"{host}/Images/MemoryPhones/{fileName}";
+            phone.Image = url;
+
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
@@ -162,7 +214,7 @@ namespace Poliak_UI_WT.API.Controllers
                     System.IO.File.Delete(normalizedImagePath);
                 }
 
-                DebugHelper.ShowData(normalizedImagePath, phone);
+                //DebugHelper.ShowData(normalizedImagePath, phone);
             }
 
             _context.Phones.Remove(phone);
@@ -208,6 +260,11 @@ namespace Poliak_UI_WT.API.Controllers
             phone.Image = url;
             await _context.SaveChangesAsync();
             return Ok();
+        }
+
+        private bool PhoneExists(int id)
+        {
+            return _context.Phones.Any(e => e.PhoneId == id);
         }
     }
 }
