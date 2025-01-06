@@ -76,7 +76,11 @@ namespace Poliak_UI_WT.API.Controllers
             return Ok(result);
         }
 
-
+        /// <summary>
+        /// Получить телефон по Id.
+        /// </summary>
+        /// <param name="id">Id телефона.</param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPhone(int id)
         {
