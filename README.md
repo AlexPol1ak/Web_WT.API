@@ -2,6 +2,7 @@
 
 # 📱 Smartphone Catalog API
 ## Project 
+#
 A web-based API application for managing a catalog of smartphones.
 ---
 ## ⚙️ Technologies and Tools:
