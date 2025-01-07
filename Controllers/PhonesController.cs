@@ -19,7 +19,13 @@ namespace Poliak_UI_WT.API.Controllers
             _context = context;
             _env = env;
         }
-
+        /// <summary>
+        /// получить все  телефоны.
+        /// </summary>
+        /// <param name="category"></param>
+        /// <param name="pageNo"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult<ResponseData<ListModel<Phone>>>> GetPhones(
              string? category,

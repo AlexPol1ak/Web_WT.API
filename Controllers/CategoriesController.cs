@@ -17,6 +17,10 @@ namespace Poliak_UI_WT.API.Controllers
         }
 
         // GET: api/Categories
+        /// <summary>
+        /// Получить все категории.
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> GetCategories()
         {
@@ -27,6 +31,12 @@ namespace Poliak_UI_WT.API.Controllers
         }
 
         // GET: api/Categories/{id}
+
+        /// <summary>
+        /// Получить категорию по  id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCategory(int id)
         {
@@ -43,6 +53,12 @@ namespace Poliak_UI_WT.API.Controllers
         }
 
         // POST: api/Categories
+
+        /// <summary>
+        /// Создать категорию.
+        /// </summary>
+        /// <param name="category"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> CreateCategory([FromBody] Category category)
         {
@@ -58,6 +74,13 @@ namespace Poliak_UI_WT.API.Controllers
         }
 
         // PUT: api/Categories/{id}
+
+        /// <summary>
+        /// Обновить категорию
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="category"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] Category category)
         {
@@ -82,6 +105,12 @@ namespace Poliak_UI_WT.API.Controllers
         }
 
         // DELETE: api/Categories/{id}
+
+        /// <summary>
+        /// Удалить категорию
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
